@@ -4,7 +4,7 @@ import random
 
 from django.core.files.base import ContentFile
 
-from ApiRest.models import Category, Works, Product, Gallery, HistoryPrice
+from ApiRest.models import Category,Product, Gallery, HistoryPrice
 
 
 class AutoCompliteDB:
@@ -57,14 +57,13 @@ class AutoCompliteDB:
         return ContentFile(photo.open('rb').read(), photo.name)
 
     def add_work(self):
-        n = self.randomaizer_product_number()
-        model = Works.objects.create(description=self.randomaizer_description(),
-                                     cat_id=self.randomaizer_cat_id(),
-                                     product_number=n,
-                                     slug=self.randomaizer_product_number(),
-                                     date_added=self.randomaizer_date())
+        model = Product.objects.create(description=self.randomaizer_description(),
+                                       cat_id=self.randomaizer_cat_id(),
+                                       product_number=self.randomaizer_product_number(),
+                                       slug=self.randomaizer_product_number(),
+                                       is_my_work=True,
+                                       date_added=self.randomaizer_date())
         return model
-
 
     def add_product(self):
         model = Product.objects.create(description=self.randomaizer_description(),
@@ -74,55 +73,35 @@ class AutoCompliteDB:
                                        date_added=self.randomaizer_date())
         return model
 
-    def add_photo(self, key, is_product=False):
-        if is_product:
-            for i in range(5):
-                ph = self.randomaizer_photo()
-                if not i:
-                    Gallery.objects.create(product=key,
-                                           photo=ph,
-                                           is_title=True)
-                else:
-                    Gallery.objects.create(product=key,
-                                           photo=ph,
-                                           is_title=False)
-        else:
-            for i in range(5):
-                ph = self.randomaizer_photo()
-                if not i:
-                    Gallery.objects.create(my_product=key,
-                                           photo=ph,
-                                           is_title=True)
-                else:
-                    Gallery.objects.create(my_product=key,
-                                           photo=ph,
-                                           is_title=False)
+    def add_photo(self, key):
+        for i in range(5):
+            ph = self.randomaizer_photo()
+            is_title = True if i == 0 else False
+            Gallery.objects.create(product=key,
+                                   photo=ph,
+                                   is_title=is_title)
 
-    def add_price(self, key, is_product):
-        count_iter = random.randint(1, 3)
-        if is_product:
-            for _ in range(count_iter):
-                HistoryPrice.objects.create(product=key,
-                                            price=self.randomaizer_price(),
-                                            date_added=self.randomaizer_date())
-        else:
-            for _ in range(count_iter):
-                HistoryPrice.objects.create(my_product=key,
-                                            price=self.randomaizer_price(),
-                                            date_added=self.randomaizer_date())
+    def add_price(self, key):
+        active_p = self.randomaizer_price()
+        old_p = self.randomaizer_price()
+        is_action = True if active_p < old_p else False
+        HistoryPrice.objects.create(product=key,
+                                    price_active=active_p,
+                                    price_old=old_p,
+                                    is_action=is_action,
+                                    date_added=self.randomaizer_date())
 
     def run(self):
-
         for _ in range(40):
             m = self.add_product()
-            self.add_photo(m, is_product=True)
-            self.add_price(m, is_product=True)
-            print(f'{_} |{"*"*_}')
+            self.add_photo(m)
+            self.add_price(m)
+            print(f'{_} |{"*"*_}', end='\r')
         for _ in range(20):
             n = self.add_work()
-            self.add_photo(n, is_product=False)
-            self.add_price(n, is_product=False)
-            print(f'{_} |{"*"*_}')
+            self.add_photo(n)
+            self.add_price(n)
+            print(f'{_} |{"*"*_}', end='\r')
 
 
 if __name__ == '__main__':

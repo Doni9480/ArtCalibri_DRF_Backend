@@ -1,66 +1,138 @@
-from django.db.models import Count
-from rest_framework import generics
+from django.db.models import Sum
+from rest_framework import permissions
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 
-from .models import Gallery, Category, Product, HistoryPrice
-from .serialaizer import CategorySerialaizer, GallerySerialaizer, ProductSerialaizer, HistoryPriceSerialaizer
+from .models import Gallery, Category, Product, Order
+from .serializer import GallerySerialaizer, ProductSerialaizer, CategorySerializer, OrderSerialaizer
 
 
-class CatigoryApiView(APIView):
+class CategoryApiView(ModelViewSet):
+    serializer_class = CategorySerializer
+    permission_classes = (permissions.AllowAny,)
+    lookup_field = 'slug'
 
-    def get(self, request):
-        limit = int(request.GET.get("limit", 0))
-        if limit != 0:
-            cats = Category.objects.order_by('-id')[:limit]
+    def get_queryset(self):
+        limit = self.request.GET.get('limit')
+        if limit and limit.isnumeric():
+            count_obj = Category.objects.count()
+            if count_obj >= int(limit):
+                return Category.objects.all()[:int(limit)]
+        return Category.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        get_photo = request.GET.get('get_photo')
+        if get_photo is not None and get_photo == 'false':
+            my_fields = {'cat': ('id', 'name', 'slug')}
         else:
-            cats = Category.objects.order_by('-id')
-        return Response({'categoryes': CategorySerialaizer(cats, many=True).data})
+            my_fields = {'cat': ('id', 'name', 'slug', 'title_photo')}
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True, context={'my_fields': my_fields})
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True, context={'my_fields': my_fields})
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        my_fields = {'cat': ('id', 'name', 'slug',),
+                     'cat_products': True,
+                     'product': ('id', 'description', 'slug', 'cat_id', 'photo', 'prices'),
+                     'gallery': ('id', 'photo'),
+                     'prices': ('id', 'price_active', 'price_old')
+                     }
+
+        serializer = self.get_serializer(instance, context={"my_fields": my_fields})
+        return Response(serializer.data)
 
 
-class GalleryApiView(APIView):
-    def get(self, request):
-        if request.GET.get('limit',5):
-            model = Gallery.objects.filter(is_title=True,)[:int(request.GET.get('limit',25))]
-        else:
-            model = Gallery.objects.filter(is_title=True)
-        return Response({'photos': GallerySerialaizer(model, many=True).data})
+class GalleryApiView(ModelViewSet):
+    serializer_class = GallerySerialaizer
+    permission_classes = (permissions.AllowAny,)
+
+    def get_queryset(self):
+        get_title_photo = self.request.GET.get('get_title_photo')
+        if get_title_photo == 'true':
+            return Gallery.objects.filter(is_title=True)
+        return Gallery.objects.all()
 
 
-class CategoryProductsApiView(APIView):
+class ProductsApiView(ModelViewSet):
+    serializer_class = ProductSerialaizer
+    permission_classes = (permissions.AllowAny,)
 
-    def get(self, request, cat_product):
-        category = Category.objects.get(slug=cat_product)
-        products = Product.objects.filter(cat_id__slug=cat_product)
-        prices = HistoryPrice.objects.filter(product__in=products).order_by('date_added')
-        if request.GET and request.GET.get('title') == 'true':
-            gallery = Gallery.objects.filter(product__in=products, is_title=True)
-        else:
-            gallery = Gallery.objects.filter(product__in=products)
-        return Response({'category': CategorySerialaizer(category).data,
-                         'products': ProductSerialaizer(products, many=True).data,
-                         'prices': HistoryPriceSerialaizer(prices, many=True).data,
-                         'gallery': GallerySerialaizer(gallery, many=True).data
-                         })
+    def get_queryset(self):
+        limit = self.request.GET.get('limit')
+        get_action = self.request.GET.get('get_action')
+        if get_action == 'true':
+            count_obj = Product.objects.filter(historyprice__is_action=True).count()
+            if limit and limit.isnumeric() and count_obj >= int(limit):
+                return Product.objects.filter(historyprice__is_action=True)[:int(limit)]
+            return Product.objects.filter(historyprice__is_action=True)
+        return Product.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+
+        # Тут передаем поля модели
+        my_fields = {'product': ('id', 'description', 'cat_id', 'slug', 'photo', 'prices'),
+                     'gallery': ('id', 'photo'),
+                     'prices': ('id', 'price_active', 'price_old')}
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True, context={'my_fields': my_fields})
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True, context={'my_fields': my_fields})
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # Тут передаем поля модели
+        my_fields = {'product': ('id', 'description', 'slug', 'photo', 'prices'),
+                     'gallery': ('id', 'photo'),
+                     'all_images': True,
+                     'prices': ('id', 'price_active', 'price_old')}
+
+        serializer = self.get_serializer(instance, context={'my_fields': my_fields})
+        print(serializer.data, '#' * 100)
+        return Response(serializer.data)
 
 
-class ProductsApiView(APIView):
+class LidSaleApiView(ModelViewSet):
+    serializer_class = OrderSerialaizer
+    permission_classes = (permissions.AllowAny,)
 
-    def get(self, request):
-        if request.GET and request.GET.get('limit'):
-            products = Product.objects.order_by('-date_added')[:int(request.GET.get('limit', 10))]
-        else:
-            products = Product.objects.order_by('-date_added')
-        if request.GET and request.GET.get('action') == 'true':
-            prices = HistoryPrice.objects.annotate(num_rows=Count('product')).filter(product__in=products).order_by('date_added')
-        else:
-            prices = HistoryPrice.objects.filter(product__in=products).order_by('date_added')
-        if request.GET and request.GET.get('title') == 'true':
-            gallery = Gallery.objects.filter(product__in=products, is_title=True)
-        else:
-            gallery = Product.objects.filter(product__in=products)
-        return Response({'products': ProductSerialaizer(products, many=True).data,
-                         'prices': HistoryPriceSerialaizer(prices, many=True).data,
-                         'gallery': GallerySerialaizer(gallery, many=True).data
-                         })
+    def get_queryset(self):
+        limit = self.request.GET.get('limit')
+        get_lid_sale = self.request.GET.get('get_lid_sale')
+        if get_lid_sale == 'true':
+            count_obj = Order.objects.values('product_key').annotate(count=Sum('count_prod')).order_by('-count').count()
+            if limit and limit.isnumeric() and count_obj >= int(limit):
+                return Order.objects.values('product_key').annotate(count=Sum('count_prod')).order_by('-count')[
+                       :int(limit)]
+        return Order.objects.values('product_key').annotate(count=Sum('count_prod')).order_by('-count')
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+
+        # Тут передаем поля модели
+        my_fields = {'product': ('id', 'description', 'cat_id', 'slug', 'photo', 'prices'),
+                     'gallery': ('id', 'photo'),
+                     'prices': ('id', 'price_active', 'price_old')}
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True, context={'my_fields': my_fields})
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True, context={'my_fields': my_fields})
+        return Response({'products': serializer.data})

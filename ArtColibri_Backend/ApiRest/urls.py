@@ -1,11 +1,15 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework import routers
 
-from ApiRest.views import CatigoryApiView, GalleryApiView, CategoryProductsApiView, ProductsApiView
+from ApiRest.views import CategoryApiView, GalleryApiView, ProductsApiView, LidSaleApiView
+
+router = routers.DefaultRouter()
+router.register(r'category', CategoryApiView, basename='category')
+router.register(r'gallery', GalleryApiView, basename='gallery')
+router.register(r'products', ProductsApiView, basename='products')
+router.register(r'order', LidSaleApiView, basename='order')
 
 urlpatterns = [
-    path('category/', CatigoryApiView.as_view()),
-    path('gallery/', GalleryApiView.as_view()),
-    path('products/', ProductsApiView.as_view()),
-    path('category/<slug:cat_product>', CategoryProductsApiView.as_view()),
+    path('', include(router.urls)),
 
 ]
