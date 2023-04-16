@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.fields import SkipField
 
-from .models import Category, Gallery, Product, HistoryPrice, Order
+from .models import Category, Gallery, Product, HistoryPrice, Order, PromoCode
 
 
 class CategorySerializer(serializers.HyperlinkedModelSerializer):
@@ -22,12 +22,12 @@ class CategorySerializer(serializers.HyperlinkedModelSerializer):
             except SkipField:
                 continue
         if my_field_data.get('cat_products'):
-            data['products'] = ProductSerialaizer(Product.objects.filter(cat_id=data.get('id')), many=True,
-                                                  context=self.context).data
+            data['products'] = ProductSerializer(Product.objects.filter(cat_id=data.get('id')), many=True,
+                                                 context=self.context).data
         return data
 
 
-class GallerySerialaizer(serializers.ModelSerializer):
+class GallerySerializer(serializers.ModelSerializer):
     product = serializers.SlugRelatedField(slug_field='slug', read_only=True)
     cat_slug = serializers.SerializerMethodField()
 
@@ -35,7 +35,8 @@ class GallerySerialaizer(serializers.ModelSerializer):
         model = Gallery
         fields = ('id', 'photo', 'cat_slug', 'product')
 
-    def get_cat_slug(self, obj):
+    @staticmethod
+    def get_cat_slug(obj):
         return obj.product.cat_id.slug
 
     def to_representation(self, instance):
@@ -53,7 +54,7 @@ class GallerySerialaizer(serializers.ModelSerializer):
         return data
 
 
-class ProductSerialaizer(serializers.ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     photo = serializers.SerializerMethodField()
     prices = serializers.SerializerMethodField()
     cat_id = serializers.SlugRelatedField(slug_field='slug', read_only=True)
@@ -66,18 +67,18 @@ class ProductSerialaizer(serializers.ModelSerializer):
         my_fields_photo = self.context.get('my_fields').get('gallery') if self.context.get('my_fields') else None
         if self.context.get('my_fields'):
             if self.context.get('my_fields').get('all_images'):
-                photo = GallerySerialaizer(Gallery.objects.filter(product=obj),
-                                           context={'gallery_fields': my_fields_photo}, many=True)
+                photo = GallerySerializer(Gallery.objects.filter(product=obj),
+                                          context={'gallery_fields': my_fields_photo}, many=True)
                 return photo.data
             else:
-                photo = GallerySerialaizer(Gallery.objects.get(product=obj, is_title=True),
-                                           context={'gallery_fields': my_fields_photo})
+                photo = GallerySerializer(Gallery.objects.get(product=obj, is_title=True),
+                                          context={'gallery_fields': my_fields_photo})
                 return photo.data
 
     def get_prices(self, obj):
         my_fields_price = self.context.get('my_fields').get('prices') if self.context.get('my_fields') else None
-        prices = HistoryPriceSerialaizer(HistoryPrice.objects.get(product=obj),
-                                         context={'price_fields': my_fields_price})
+        prices = HistoryPriceSerializer(HistoryPrice.objects.get(product=obj),
+                                        context={'price_fields': my_fields_price})
         return prices.data
 
     def to_representation(self, instance):
@@ -95,7 +96,7 @@ class ProductSerialaizer(serializers.ModelSerializer):
         return data
 
 
-class HistoryPriceSerialaizer(serializers.ModelSerializer):
+class HistoryPriceSerializer(serializers.ModelSerializer):
     class Meta:
         model = HistoryPrice
         fields = '__all__'
@@ -115,7 +116,7 @@ class HistoryPriceSerialaizer(serializers.ModelSerializer):
         return data
 
 
-class OrderSerialaizer(serializers.ModelSerializer):
+class OrderSerializer(serializers.ModelSerializer):
     product_key = serializers.SerializerMethodField()
 
     class Meta:
@@ -123,8 +124,8 @@ class OrderSerialaizer(serializers.ModelSerializer):
         fields = ('product_key',)
 
     def get_product_key(self, obj):
-        product = ProductSerialaizer(Product.objects.get(pk=obj.get('product_key')), read_only=True,
-                                     context=self.context)
+        product = ProductSerializer(Product.objects.get(pk=obj.get('product_key')), read_only=True,
+                                    context=self.context)
         return product.data
 
     def to_representation(self, instance):
@@ -132,3 +133,9 @@ class OrderSerialaizer(serializers.ModelSerializer):
             **self.get_product_key(instance)
         }
         return data
+
+
+class PromoCodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PromoCode
+        fields = ('title', 'discount')
