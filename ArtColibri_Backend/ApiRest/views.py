@@ -69,16 +69,20 @@ class ProductsApiView(ModelViewSet):
     lookup_field = 'slug'
 
     def get_queryset(self):
-        limit = self.request.GET.get('limit')
-        get_action = self.request.GET.get('get_action')
+        limit = self.request.GET.getlist('limit')
+        get_action = self.request.GET.getlist('get_action')
         get_products_slug = self.request.GET.getlist('product[]')
+        get_search_txt = self.request.GET.getlist('search_text')
+        print(get_action, limit)
         if get_action == 'true':
             count_obj = Product.objects.filter(historyprice__is_action=True).count()
-            if limit and limit.isnumeric() and count_obj >= int(limit):
+            if limit and limit.isnumeric() and count_obj >= int(limit[0]):
                 return Product.objects.filter(historyprice__is_action=True)[:int(limit)]
             return Product.objects.filter(historyprice__is_action=True)
         elif get_products_slug:
             return Product.objects.filter(slug__in=get_products_slug)
+        elif get_search_txt and len(get_search_txt[0]) > 1:
+            return Product.objects.filter(description__startswith=get_search_txt[0])
         else:
             return Product.objects.all()
 
@@ -87,9 +91,12 @@ class ProductsApiView(ModelViewSet):
         page = self.paginate_queryset(queryset)
 
         # Тут передаем поля модели
-        my_fields = {'product': ('id', 'description', 'product_number', 'cat_id', 'slug', 'photo', 'prices'),
-                     'gallery': ('id', 'photo'),
-                     'prices': ('id', 'price_active', 'price_old')}
+        if request.GET.get('search_mod'):
+            my_fields = {'product': ('id', 'description', 'cat_id', 'slug')}
+        else:
+            my_fields = {'product': ('id', 'description', 'product_number', 'cat_id', 'slug', 'photo', 'prices'),
+                         'gallery': ('id', 'photo'),
+                         'prices': ('id', 'price_active', 'price_old')}
 
         if page is not None:
             serializer = self.get_serializer(page, many=True, context={'my_fields': my_fields})
