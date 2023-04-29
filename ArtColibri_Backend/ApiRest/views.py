@@ -71,16 +71,16 @@ class ProductsApiView(ModelViewSet):
     def get_queryset(self):
         limit = self.request.GET.getlist('limit')
         get_action = self.request.GET.getlist('get_action')
-        get_products_slug = self.request.GET.getlist('product[]')
+        get_products_id = self.request.GET.getlist('product[]')
         get_search_txt = self.request.GET.getlist('search_text')
-        print(get_action, limit)
+        print(get_products_id)
         if get_action == 'true':
             count_obj = Product.objects.filter(historyprice__is_action=True).count()
             if limit and limit.isnumeric() and count_obj >= int(limit[0]):
                 return Product.objects.filter(historyprice__is_action=True)[:int(limit)]
             return Product.objects.filter(historyprice__is_action=True)
-        elif get_products_slug:
-            return Product.objects.filter(slug__in=get_products_slug)
+        elif get_products_id:
+            return Product.objects.filter(pk__in=get_products_id)
         elif get_search_txt and len(get_search_txt[0]) > 1:
             return Product.objects.filter(description__startswith=get_search_txt[0])
         else:
@@ -121,6 +121,7 @@ class ProductsApiView(ModelViewSet):
 class LidSaleApiView(ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = (permissions.AllowAny,)
+
 
     def get_queryset(self):
         limit = self.request.GET.get('limit')
