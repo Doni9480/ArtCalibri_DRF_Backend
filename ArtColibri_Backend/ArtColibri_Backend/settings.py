@@ -78,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ArtColibri_Backend.wsgi.application'
+WSGI_APPLICATION = 'ArtColibri_Backend.wsgi.app'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
