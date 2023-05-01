@@ -1,14 +1,14 @@
 {
   "builds": [
     {
-      "src": "ArtColibri_Backend/ArtColibri_Backend/wsgi.py",
+      "src": "./ArtColibri_Backend/wsgi.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "ArtColibri_Backend/ArtColibri_Backend/wsgi.py"
+      "dest": "./ArtColibri_Backend/wsgi.py"
     }
   ]
 }
