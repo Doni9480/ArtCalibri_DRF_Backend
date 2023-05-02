@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-oa5i_bi%5h4yvoux(*1*o$=$d(b0yaoytsf43!t=$&dq3u)1o3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['artcalibridrfbackend-production.up.railway.app', '127.0,0.1']
 
 # Application definition
 
@@ -86,13 +86,16 @@ WSGI_APPLICATION = 'ArtColibri_Backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('PGDATABASE'),
-        'USER': os.getenv('PGUSER'),
-        'PASSWORD': os.getenv('PGPASSWORD'),
-        'HOST': os.getenv('PGHOST'),
-        'PORT': os.getenv('PGPORT'),
+        'NAME': 'railway', # os.getenv('PGDATABASE'),
+        'USER': 'postgres', #os.getenv('PGUSER'),
+        'PASSWORD': 'XgRQLqXPoBjh4q7g04yg', #os.getenv('PGPASSWORD'),
+        'HOST': 'containers-us-west-203.railway.app', #os.getenv('PGHOST'),
+        'PORT': '7208',#os.getenv('PGPORT'),
     }
 }
+print('_'*100)
+print(os.getenv('PGDATABASE'))
+print('_'*100)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
