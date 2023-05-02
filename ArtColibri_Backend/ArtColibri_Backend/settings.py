@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-oa5i_bi%5h4yvoux(*1*o$=$d(b0yaoytsf43!t=$&dq3u)1o3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['artcalibridrfbackend-production.up.railway.app', '127.0,0.1']
 
