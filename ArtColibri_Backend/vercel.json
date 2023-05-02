@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "./ArtColibri_Backend/wsgi.py",
+      "src": "ArtColibri_Backend/wsgi.py",
       "use": "@vercel/python",
       "config": { "maxLambdaSize": "50mb", "runtime": "python3.9" }
     },
@@ -21,7 +21,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "./ArtColibri_Backend/wsgi.py"
+      "dest": "ArtColibri_Backend/wsgi.py"
     }
   ]
 }
