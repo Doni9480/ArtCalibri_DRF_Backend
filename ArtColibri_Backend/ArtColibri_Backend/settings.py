@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-oa5i_bi%5h4yvoux(*1*o$=$d(b0yaoytsf43!t=$&dq3u)1o3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app']
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -78,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ArtColibri_Backend.wsgi.app'
+WSGI_APPLICATION = 'ArtColibri_Backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
