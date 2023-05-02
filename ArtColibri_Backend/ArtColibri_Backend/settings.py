@@ -86,11 +86,11 @@ WSGI_APPLICATION = 'ArtColibri_Backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'railway', # os.getenv('PGDATABASE'),
-        'USER': 'postgres', # os.getenv('PGUSER'),
-        'PASSWORD': 'XgRQLqXPoBjh4q7g04yg', # os.getenv('PGPASSWORD'),
-        'HOST':'containers-us-west-203.railway.app', # os.getenv('PGHOST'),
-        'PORT': '7208', # os.getenv('PGPORT'),
+        'NAME': os.getenv('PGDATABASE'),
+        'USER': os.getenv('PGUSER'),
+        'PASSWORD': os.getenv('PGPASSWORD'),
+        'HOST': os.getenv('PGHOST'),
+        'PORT': os.getenv('PGPORT'),
     }
 }
 
