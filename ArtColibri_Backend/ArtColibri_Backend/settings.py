@@ -85,8 +85,12 @@ WSGI_APPLICATION = 'ArtColibri_Backend.wsgi.app'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'railway', # os.getenv('PGDATABASE'),
+        'USER': 'postgres', # os.getenv('PGUSER'),
+        'PASSWORD': 'XgRQLqXPoBjh4q7g04yg', # os.getenv('PGPASSWORD'),
+        'HOST':'containers-us-west-203.railway.app', # os.getenv('PGHOST'),
+        'PORT': '7208', # os.getenv('PGPORT'),
     }
 }
 
@@ -123,7 +127,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = f'{BASE_DIR}/{STATIC_URL}'
+# STATIC_ROOT = f'{BASE_DIR}/{STATIC_URL}'
+
+STATICFILES_DIRS = [BASE_DIR / 'static', ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
