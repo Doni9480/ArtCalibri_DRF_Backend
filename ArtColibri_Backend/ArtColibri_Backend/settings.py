@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-oa5i_bi%5h4yvoux(*1*o$=$d(b0yaoytsf43!t=$&dq3u)1o3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['artcalibridrfbackend-production.up.railway.app', '127.0,0.1']
 
@@ -93,9 +93,6 @@ DATABASES = {
         'PORT': '7208',#os.getenv('PGPORT'),
     }
 }
-print('_'*100)
-print(os.getenv('PGDATABASE'))
-print('_'*100)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -130,10 +127,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = f'{BASE_DIR}/{STATIC_URL}'
+# STATIC_ROOT = f'{BASE_DIR}/{STATIC_URL}'
 
-# STATICFILES_DIRS = [BASE_DIR / 'static', ]
-# STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static', ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
