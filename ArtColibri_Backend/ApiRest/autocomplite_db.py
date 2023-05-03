@@ -92,12 +92,12 @@ class AutoCompliteDB:
                                     date_added=self.randomaizer_date())
 
     def run(self):
-        for _ in range(40):
+        for _ in range(20):
             m = self.add_product()
             self.add_photo(m)
             self.add_price(m)
             print(f'{_} |{"*"*_}', end='\r')
-        for _ in range(20):
+        for _ in range(15):
             n = self.add_work()
             self.add_photo(n)
             self.add_price(n)
